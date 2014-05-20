@@ -52,62 +52,62 @@ try:
     fieldMappings2 = arcpy.na.NAClassFieldMappings(outNALayer, incidentsLayerName)
     fieldMappings2["Name"].mappedFieldName = "Name"
     
-    # # Run with Senario 1: Unorganized Smuggling 1
-    # arcpy.AddMessage("Running Scenario_1.")
-    # solverProperties = arcpy.na.GetSolverProperties(outNALayer)
-    # defaultRestrictions = solverProperties.restrictions
-    # defaultRestrictions += ["Avoid Off-road driving", "Avoid On-road driving"]
-    # solverProperties.restrictions = defaultRestrictions
-    # arcpy.na.AddLocations(outNALayer, facilitiesLayerName, inFacilities,
-    #                       fieldMappings1,"","","","","CLEAR","","","EXCLUDE")
-    # arcpy.na.AddLocations(outNALayer, incidentsLayerName, inIncidents,
-    #                       fieldMappings2,"","","","","CLEAR","","","EXCLUDE")
-    # arcpy.na.Solve(outNALayer)
-    # arcpy.AddMessage("Solving.")
-    # arcpy.AddMessage(datetime.datetime.now())
-    # for lyr in arcpy.mapping.ListLayers(outNALayer):
-    #     if lyr.name == "Routes":
-    #         arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_1")
-    # arcpy.AddField_management(outRouteFile + "Scenario_1", scenarioid, SHORT)
-    # arcpy.CalculateField_management(outRouteFile + "Scenario_1", scenarioid, 1)
-    # arcpy.AddMessage("Layer for Scenario_1 saved.")
-    # arcpy.AddMessage(datetime.datetime.now())
+    # Run with Senario 1: Unorganized Smuggling 1
+    arcpy.AddMessage("Running Scenario_1.")
+    solverProperties = arcpy.na.GetSolverProperties(outNALayer)
+    defaultRestrictions = solverProperties.restrictions
+    defaultRestrictions += ["Avoid Off-road driving", "Avoid On-road driving"]
+    solverProperties.restrictions = defaultRestrictions
+    arcpy.na.AddLocations(outNALayer, facilitiesLayerName, inFacilities,
+                          fieldMappings1,"","","","","CLEAR","","","EXCLUDE")
+    arcpy.na.AddLocations(outNALayer, incidentsLayerName, inIncidents,
+                          fieldMappings2,"","","","","CLEAR","","","EXCLUDE")
+    arcpy.na.Solve(outNALayer)
+    arcpy.AddMessage("Solving.")
+    arcpy.AddMessage(datetime.datetime.now())
+    for lyr in arcpy.mapping.ListLayers(outNALayer):
+        if lyr.name == "Routes":
+            arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_1")
+    arcpy.AddField_management(outRouteFile + "Scenario_1", "scenarioid", "SHORT")
+    arcpy.CalculateField_management(outRouteFile + "Scenario_1", "scenarioid", 1)
+    arcpy.AddMessage("Layer for Scenario_1 saved.")
+    arcpy.AddMessage(datetime.datetime.now())
     
-    # # Run with Scenario 2: Unorganized Smuggling 2
-    # arcpy.AddMessage("Running Scenario_2.")
-    # solverProperties = arcpy.na.GetSolverProperties(outNALayer)
-    # defaultRestrictions = solverProperties.restrictions
-    # defaultRestrictions += ["Avoid City", "Avoid Open Area", "Prefer Ephemeral River", "Prefer Federal Land", "Prefer Indian Reservation", "Prefer Northern Visibility"]
-    # solverProperties.restrictions = defaultRestrictions
-    # arcpy.na.AddLocations(outNALayer, facilitiesLayerName, inFacilities,
-    #                       fieldMappings1,"","","","","CLEAR","","","EXCLUDE")
-    # arcpy.na.AddLocations(outNALayer, incidentsLayerName, inIncidents,
-    #                       fieldMappings2,"","","","","CLEAR","","","EXCLUDE")
-    # arcpy.AddMessage("Solving.")
-    # arcpy.AddMessage(datetime.datetime.now())
-    # arcpy.na.Solve(outNALayer)
-    # for lyr in arcpy.mapping.ListLayers(outNALayer):
-    #     if lyr.name == "Routes":
-    #         arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_2")
-    # arcpy.AddField_management(outRouteFile + "Scenario_2", scenarioid, SHORT)
-    # arcpy.CalculateField_management(outRouteFile + "Scenario_2", scenarioid, 2)
+    # Run with Scenario 2: Unorganized Smuggling 2
+    arcpy.AddMessage("Running Scenario_2.")
+    solverProperties = arcpy.na.GetSolverProperties(outNALayer)
+    defaultRestrictions = solverProperties.restrictions
+    defaultRestrictions += ["Avoid City", "Avoid Open Area", "Prefer Ephemeral River", "Prefer Federal Land", "Prefer Indian Reservation", "Prefer Northern Visibility"]
+    solverProperties.restrictions = defaultRestrictions
+    arcpy.na.AddLocations(outNALayer, facilitiesLayerName, inFacilities,
+                          fieldMappings1,"","","","","CLEAR","","","EXCLUDE")
+    arcpy.na.AddLocations(outNALayer, incidentsLayerName, inIncidents,
+                          fieldMappings2,"","","","","CLEAR","","","EXCLUDE")
+    arcpy.AddMessage("Solving.")
+    arcpy.AddMessage(datetime.datetime.now())
+    arcpy.na.Solve(outNALayer)
+    for lyr in arcpy.mapping.ListLayers(outNALayer):
+        if lyr.name == "Routes":
+            arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_2")
+    arcpy.AddField_management(outRouteFile + "Scenario_2", "scenarioid", "SHORT")
+    arcpy.CalculateField_management(outRouteFile + "Scenario_2", "scenarioid", 2)
 
-    # arcpy.AddMessage("Layer for Scenario_2 saved. ")
-    # arcpy.AddMessage(datetime.datetime.now())
+    arcpy.AddMessage("Layer for Scenario_2 saved. ")
+    arcpy.AddMessage(datetime.datetime.now())
 
     # Run with Scenario 3: Organized Smuggling 1
     arcpy.AddMessage("Running Scenario_3.")
     solverProperties = arcpy.na.GetSolverProperties(outNALayer)
     defaultRestrictions = solverProperties.restrictions
-    # defaultRestrictions.remove("Avoid City")
-    # defaultRestrictions.remove("Avoid Off-road driving")
-    # defaultRestrictions += ["Avoid Off-road walking"]
-    # defaultRestrictions.remove("Avoid On-road driving")
-    # defaultRestrictions.remove("Avoid Open Area")
-    # defaultRestrictions.remove("Prefer Ephemeral River")
-    # defaultRestrictions.remove("Prefer Federal Land")
-    # defaultRestrictions.remove("Prefer Indian Reservation")
-    # defaultRestrictions.remove("Prefer Northern Visibility")
+    defaultRestrictions.remove("Avoid City")
+    defaultRestrictions.remove("Avoid Off-road driving")
+    defaultRestrictions += ["Avoid Off-road walking"]
+    defaultRestrictions.remove("Avoid On-road driving")
+    defaultRestrictions.remove("Avoid Open Area")
+    defaultRestrictions.remove("Prefer Ephemeral River")
+    defaultRestrictions.remove("Prefer Federal Land")
+    defaultRestrictions.remove("Prefer Indian Reservation")
+    defaultRestrictions.remove("Prefer Northern Visibility")
     solverProperties.restrictions = defaultRestrictions
     arcpy.na.AddLocations(outNALayer, facilitiesLayerName, inFacilities,
                           fieldMappings1,"","","","","CLEAR","","","EXCLUDE")
@@ -119,8 +119,8 @@ try:
     for lyr in arcpy.mapping.ListLayers(outNALayer):
         if lyr.name == "Routes":
             arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_3")
-    arcpy.AddField_management(outRouteFile + "Scenario_3", scenarioid, SHORT)
-    arcpy.CalculateField_management(outRouteFile + "Scenario_3", scenarioid, 3)
+    arcpy.AddField_management(outRouteFile + "Scenario_3", "scenarioid", "SHORT")
+    arcpy.CalculateField_management(outRouteFile + "Scenario_3", "scenarioid", 3)
     arcpy.AddMessage("Layer for Scenario_3 saved.")
     arcpy.AddMessage(datetime.datetime.now())
 
@@ -145,8 +145,8 @@ try:
     for lyr in arcpy.mapping.ListLayers(outNALayer):
         if lyr.name == "Routes":
             arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_4")
-    arcpy.AddField_management(outRouteFile + "Scenario_4", scenarioid, SHORT)
-    arcpy.CalculateField_management(outRouteFile + "Scenario_4", scenarioid, 4)
+    arcpy.AddField_management(outRouteFile + "Scenario_4", "scenarioid", "SHORT")
+    arcpy.CalculateField_management(outRouteFile + "Scenario_4", "scenarioid", 4)
     arcpy.AddMessage("Layer for Scenario_4 saved.")
     arcpy.AddMessage(datetime.datetime.now())
 
@@ -171,8 +171,8 @@ try:
     for lyr in arcpy.mapping.ListLayers(outNALayer):
         if lyr.name == "Routes":
             arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_5")
-    arcpy.AddField_management(outRouteFile + "Scenario_5", scenarioid, SHORT)
-    arcpy.CalculateField_management(outRouteFile + "Scenario_5", scenarioid, 5)
+    # arcpy.AddField_management(outRouteFile + "Scenario_5", "scenarioid", "SHORT")
+    # arcpy.CalculateField_management(outRouteFile + "Scenario_5", "scenarioid", 5)
     arcpy.AddMessage("Layer for Scenario_5 saved.")
     arcpy.AddMessage(datetime.datetime.now())
 
@@ -193,8 +193,8 @@ try:
     for lyr in arcpy.mapping.ListLayers(outNALayer):
         if lyr.name == "Routes":
             arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_6")
-    arcpy.AddField_management(outRouteFile + "Scenario_6", scenarioid, SHORT)
-    arcpy.CalculateField_management(outRouteFile + "Scenario_6", scenarioid, 6)
+    # arcpy.AddField_management(outRouteFile + "Scenario_6", "scenarioid", "SHORT")
+    # arcpy.CalculateField_management(outRouteFile + "Scenario_6", "scenarioid", 6)
     arcpy.AddMessage("Layer for Scenario_6 saved.")
     arcpy.AddMessage(datetime.datetime.now())
 
@@ -214,8 +214,8 @@ try:
     for lyr in arcpy.mapping.ListLayers(outNALayer):
         if lyr.name == "Routes":
             arcpy.CopyFeatures_management(lyr, outRouteFile + "Scenario_7")
-    arcpy.AddField_management(outRouteFile + "Scenario_7", scenarioid, SHORT)
-    arcpy.CalculateField_management(outRouteFile + "Scenario_7", scenarioid, 7)
+    # arcpy.AddField_management(outRouteFile + "Scenario_7", "scenarioid", "SHORT")
+    # arcpy.CalculateField_management(outRouteFile + "Scenario_7", "scenarioid", 7)
     arcpy.AddMessage("Layer for Scenario_7 saved.") 
     arcpy.AddMessage(datetime.datetime.now())
 
