@@ -1,9 +1,9 @@
 # Detect Barriers Along Road
-# Last Update: 05/20/2014
+# Last Update: 05/22/2014
 # Author: Satoshi Miyazawa
 # koitaroh@gmail.com
 # Detect barriers for mode change at intersections between illicit grid and road
-# Parameters: rasterWorkspace(workspace), intersectionPoint(feature layer), dissolvedStreet(feature layer), signitureFile(file), illicitGrid_rook(feature class), resultWorkspace(workspace)
+# Parameters: rasterWorkspace(workspace), intersectionPoint(feature layer), dissolvedStreet(feature layer), signitureFile(file), illicitGrid_rook(feature layer), resultWorkspace(workspace)
 # Require: arcpy(ArcGIS)
 # Developed for ArcGIS 10.2.1
 
@@ -15,6 +15,7 @@ arcpy.CheckOutExtension("Spatial")
 
 try:
     # load the point featrure class 
+    defaultWorkspace = "C://Users/koitaroh/Documents/ArcGIS/Default.gdb"
     rasterWorkspace = arcpy.GetParameterAsText(0)
     arcpy.env.workspace = rasterWorkspace
     intersectionPoint = arcpy.GetParameterAsText(1)
@@ -39,20 +40,24 @@ try:
         result = arcpy.GetCount_management(intersectionPoint)
         count = int(result.getOutput(0))
         if count:
-            # arcpy.AddMessage(count)
+            arcpy.AddMessage(count)
             arcpy.Buffer_analysis(intersectionPoint, buffferAtIntersections, "50 Meters", "", "", "ALL")
             arcpy.Clip_analysis(dissolvedStreet, polygonBoundary, clipStreet)
             arcpy.MultipartToSinglepart_management(buffferAtIntersections, buffferAtIntersections_2)
             arcpy.FeatureToPolygon_management([buffferAtIntersections_2, clipStreet], featureToPolygonResult, "", "NO_ATTRIBUTES")
             barrierBuffer = resultWorkspace + "/barrierBuffer_" + raster
+            barrierBuffer2 = resultWorkspace + "/barrierBuffer2_" + raster
             arcpy.Identity_analysis(buffferAtIntersections_2, featureToPolygonResult, barrierBuffer)
+            arcpy.CopyFeatures_management(barrierBuffer, barrierBuffer2)
             result = arcpy.GetCount_management(barrierBuffer)
             count2 = int(result.getOutput(0))
             if count2:
                 mlcOut = arcpy.sa.MLClassify(raster, signitureFile)
                 mlcOut.save(resultWorkspace + "/MLC_" + raster)
-                resultTable = resultWorkspace + "/barrierTable_" + raster
-                arcpy.sa.TabulateArea(barrierBuffer, "OID", mlcOut, resultTable)
+                mlcRaster = resultWorkspace + "/MLC_" + raster
+                resultTable = defaultWorkspace + "/barrierTable_" + raster
+                arcpy.sa.TabulateArea(barrierBuffer, "OBJECTID", mlcRaster, resultTable)
+                arcpy.AddMessage("Check")
                 arcpy.AddField_management(resultTable, "RatioDeveloped", "DOUBLE")
                 arcpy.AddField_management(resultTable, "RatioForest", "DOUBLE")
                 arcpy.AddField_management(resultTable, "RatioShrub", "DOUBLE")
@@ -104,4 +109,4 @@ try:
 
 
 except:
-    print arcpy.GetMessages(2)   
+    print (arcpy.GetMessages(2))
