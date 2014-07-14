@@ -1,0 +1,341 @@
+<?xml version="1.0"?>
+
+<!-- Evolver Model Specification File -->
+<RePastEvolver:EvolverModelSpec xmlns:RePastEvolver="http://src.uchicago.edu/simbuilder/">
+<RePastEvolver:EvolverProject  ProjectDirectory="C:\Repast 3\Agent Analyst\output" PackageName="default_package" ProjectName="Environment" ClassPath="" consoleErr="true" consoleOut="true" >
+<Description>
+<![CDATA[
+
+]]>
+</Description>
+<RePastEvolver:EvolverModel  ModelName="Exercise3" DisplayName="HumanTrafficking_ABM" Class="class uchicago.src.simbuilder.beans.gis.DefaultGISModelProducer" gisPackage="ArcGIS" >
+  <RePastEvolver:action name="initAgents" sigReadOnly="true" retType="void" imports="uchicago.src.sim.util.Random" paramNames="">
+<![CDATA[
+def initAgents():
+    
+  # Explicitly set the random number generator seed and initialize Random distributions 
+  # Create RNG and set seed                 
+  Random.setSeed(100)
+  Random.createUniform()
+  
+  # Initialize model level variables
+  self.initModel()
+  
+  # Initialize the activity spaces of agents
+  self.initCitizens()
+  
+  # Process the street nodes for use in the model
+  self.setupPlaces()
+  
+  # Check to make sure values in shapefile fields are zero
+  for node as Place in self.places:
+    if  node.totalVisit > 0:
+      node.totalVisit = 0
+      #print "WARNING:  Shapefile had non-zero values in counter fields"  
+      
+  # Initialize the cop agents
+  self.initCops()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="updateDisplay" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def updateDisplay():
+  self.updateGISDisplay()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="writeAgents" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def writeAgents():
+  baseFilePath = "F:\\HumanTrafficking\\HumanTrafficking_ABM\\"
+  self.writeAgents(self.places, baseFilePath + "IllicitGrid_NodeList_20140711_1517.shp")
+#  baseFilePath = "C:\\ESRIPress\\AgentAnalyst\\Chapter06\\Data\\"
+# self.writeAgents(self.places, baseFilePath + "StreetIntersections.shp")
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="setupPlaces" sigReadOnly="false" retType="void" imports="java.io.BufferedReader java.io.FileReader java.util.StringTokenizer" paramNames="">
+<![CDATA[
+def setupPlaces():
+  # Put Places in a HashMap where the key is the strnode-id 
+  # Creates the map
+  self.placeMap = LinkedHashMap()
+  
+  # Add the places to the hashmap 
+  for currentPlace as Place in self.places: 
+    specNode = "0"
+    specNode = String.valueOf(currentPlace.getSTRCL_())
+    specNodeNew = Float(specNode)
+    self.placeMap.put(specNodeNew, currentPlace)
+    currentPlace.setMyNeighbors(ArrayList())
+
+  # Read the neighbors file and set each nodes neighbors.
+  # The neighbors files lists the active node and the neighboring
+  # nodes of that active node.  The map created above is used to
+  # get the neighbors for each active node.
+  
+  fileName = "F:\\HumanTrafficking\\HumanTrafficking_ABM_ABMT_AdjacentNodeList_20140711_1612.csv"
+#  fileName = "C:\\ESRIPress\\AgentAnalyst\\Chapter06\\Data\\nodenghbrs.csv"
+  reader = BufferedReader(FileReader(fileName))
+  line = reader.readLine()
+    
+  while(line):
+    tokenizer = StringTokenizer(line, ",")
+    if(tokenizer.hasMoreTokens()):
+      activeNode = tokenizer.nextToken().trim()
+      actNodeObject = Float(activeNode)
+      currentPlace = (Place)self.placeMap.get(actNodeObject)   
+      #print "Current variable ", activeNode #prints out the variable strcl_
+      #print "Current node from place object:  ", currentPlace.getSTRCL_()
+      nghs = currentPlace.getMyNeighbors()
+      while (tokenizer.hasMoreTokens()):
+        ngh = tokenizer.nextToken()
+        currentPlace.myNeighbors.add(ngh)
+        #print "Neighbor node ", ngh
+    # Read the line
+    line = reader.readLine()
+  # Close the reader  
+  reader.close()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="incrementModel" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def incrementModel():
+ 
+  # Loop through the nodes with citizens and get the number of visits 
+  for occupied as ActiveNode in self.activeNodes:
+
+    # Initialize variables in action
+    numAgentsAtNode = occupied.getAgentList().size()
+  
+    # Log presence of agents on street node
+    # Retrieving the place by converting to a float object
+    occupiedObject = Float(occupied.strnode)
+    currentPlace = (Place)self.placeMap.get(occupiedObject)
+    
+    # Log fact that agents visited a node in the shapefile
+    if (currentPlace != None):
+      currentPlace.totalVisit = currentPlace.totalVisit + numAgentsAtNode 
+    else:
+      print "Unable to log visit at strnode: " + occupied.strnode + " during tick: " + self.modelStep
+ 
+  #Clear the agents from the activeNodes class  
+  self.activeNodes.clear() 
+      
+  # Increment the modelStep field
+  if self.modelStep < self.MODEL_DAY:     #10,080      
+    self.modelStep = self.modelStep + 1
+  else:
+    for node as Place in self.places:
+      node.totalVisit = 0
+    print "YEAR OVER"
+    self.stop()
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="initModel" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def initModel():
+  # Set static field values for model run
+  self.modelStep = 0
+  self.MODEL_DAY = 1440
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="initCitizens" sigReadOnly="false" retType="void" imports="cern.jet.random.engine.MersenneTwister cern.jet.random.Normal" paramNames="">
+<![CDATA[
+def initCitizens():
+ 
+  #print "Inside initCitizens"
+  
+  # Randomly assign all citizens to a starting location and name them
+  for i in range(1000):
+    p = i + 1
+    index = Random.uniform.nextIntFromTo(0, self.NUM_PLACES - 1)
+    #print "Index ", index
+    citizen = Citizen()
+    citizen.setModel(self)
+    node = (Place)self.places.get(index)
+    citizen.setLocation(node)
+    citizen.setStrnode(node.STRCL_)
+    name = "a" + p
+    citizen.setName(name)
+    self.citizens.add(citizen)
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="initCops" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def initCops():
+
+  print "Inside init cops"
+  # Randomly assign the cops to a starting location.     
+  # Use the Places to get the strnode
+  for i in range (self.COPS):           
+    index = Random.uniform.nextIntFromTo(0, self.NUM_PLACES - 1)
+    cop = Cop()
+    cop.setModel(self)
+     
+    node = (Place)self.places.get(index)
+    
+    # Log that cop started at this node
+    node.copStart = 1
+    cop.setLocation(node)
+    cop.setStrnode(node.STRCL_)
+    self.cops.add(cop)
+]]>
+</RePastEvolver:action>
+
+  <RePastEvolver:action name="writeFinalAgents" sigReadOnly="false" retType="void" imports="" paramNames="">
+<![CDATA[
+def writeFinalAgents():
+  print "Writing Final Agents"
+  baseFilePath = "./projects/rob_model/output/"
+  self.writeAgents(self.places, baseFilePath + "strnodes2")
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="placeMap" type="java.util.HashMap" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="modelStep" type="int" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="MODEL_DAY" type="int" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="NUM_PLACES" type="int" defaultValue="11387" probe="true" accessible="true" />
+<RePastEvolver:parameter name="COPS" type="int" defaultValue="200" probe="true" accessible="true" />
+
+
+<RePastEvolver:schedule order="0 1 4" />
+<RePastEvolver:schedule order="2" /><RePastEvolver:schedule order="3" />
+<RePastEvolver:schedule_item action="writeAgents" tick="100.0" type="2" last="false" target="Exercise3" id="2"/>
+<RePastEvolver:schedule_item action="updateDisplay" tick="100.0" type="2" last="true" target="Exercise3" id="3"/>
+<RePastEvolver:schedule_item action="incrementModel" tick="1.0" type="1" last="false" target="Exercise3" id="4"/>
+
+<RePastEvolver:EvolverBean type="Compileable" class="class uchicago.src.simbuilder.beans.gis.VectorAgentProducer" name="Place" groupName="places">
+<VectorDataSource shapefile="F:\HumanTrafficking\HumanTrafficking_ABM\IllicitGrid_NodeList_20140711_1527.shp" displayField="ARC_" gisPackage="ArcGIS">
+<VectorDataSourceDisplayValue field="default value" color="-65536" isDefault="true" thickness="1" />
+</VectorDataSource>
+
+  <RePastEvolver:action name="step" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def step():
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="strcl_" type="int" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="myNeighbors" type="java.util.ArrayList" defaultValue="" probe="false" accessible="true" />
+
+
+</RePastEvolver:EvolverBean>
+
+<RePastEvolver:EvolverBean type="Compileable" class="class uchicago.src.simbuilder.beans.gis.GenericAgentProducer" name="Citizen" superClass="(None)" groupName="citizens">
+  <RePastEvolver:action name="step" sigReadOnly="true" retType="void" imports="java.lang.Object java.lang.Double java.lang.Number java.lang.Integer" paramNames="">
+<![CDATA[
+def step():
+  #print "inside citizen step"
+  # Every citzen moves with each model tick
+  places = self.model.getPlaces()
+  
+  # Identify number of neighbor nodes
+  numNeighs = self.location.myNeighbors.size()  
+  maxValue = numNeighs-1
+    
+  # Generate a value
+  index = Random.uniform.nextIntFromTo(0,numNeighs -1)
+    
+  # Get the new node and assign it to strnode field 
+  newNode = self.location.getMyNeighbors().get(index)
+  self.strnode = int(String.valueOf(newNode))
+  
+  # Assigns the Citizen to a new Place
+  nodeFL = Float(self.strnode)
+  newLocation = (Place)self.model.placeMap.get(nodeFL)
+  self.location = newLocation
+
+  # ADD an agent to the ActiveNode class.  If there is an ActiveNode agent 
+  # that exists with a particular strnode value then add the name of the 
+  # citizen agent to the agentList (an arrayList).  If there is no ActiveNode 
+  # with the same value as the currentNode then add a new ActiveNode agent and 
+  # populate the strnode number with the currentNode and add the name of the 
+  # citizen agent to the agentList (an arrayList).  
+        
+  # Test to see if this is the first ActiveNode
+  nodeisEqual = false
+  if self.model.activeNodes.size() <> 0:
+    for occupied as ActiveNode in self.model.activeNodes:
+      if self.strnode == occupied.strnode:
+        occupied.agentList.add(self.name)
+        nodeisEqual = true 
+     
+  if self.model.activeNodes.size() == 0 or nodeisEqual == false:
+    newAgent = ActiveNode()
+    newAgent.setModel(self.model)
+    newAgent.strnode = self.strnode
+    newAgent.agentList = ArrayList()
+    newAgent.agentList.add(self.name)
+    self.model.activeNodes.add(newAgent)
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="strnode" type="int" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="location" type="Place" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="name" type="java.lang.String" defaultValue="" probe="false" accessible="true" />
+
+<RePastEvolver:schedule_item action="step" tick="1.0" type="1" last="false" target="for all Citizen" id="0"/>
+
+</RePastEvolver:EvolverBean>
+
+<RePastEvolver:EvolverBean type="Compileable" class="class uchicago.src.simbuilder.beans.gis.GenericAgentProducer" name="Cop" superClass="(None)" groupName="cops">
+  <RePastEvolver:action name="step" sigReadOnly="true" retType="void" imports="java.lang.Object java.lang.String uchicago.src.sim.util.SimUtilities java.util.Arrays java.util.List" paramNames="">
+<![CDATA[
+def step():
+  
+  # Every cop moves with each model tick
+  places = self.model.getPlaces()
+  
+  # Identify number of neighbor nodes
+  numNeighs = self.location.myNeighbors.size()  
+  maxValue = numNeighs-1
+    
+  # Generate a value
+  index = Random.uniform.nextIntFromTo(0,numNeighs -1)
+    
+  # Get the new node and assign it to strnode field 
+  newNode = self.location.getMyNeighbors().get(index)
+  self.strnode = int(String.valueOf(newNode))
+  
+  # Assigns the Cop to a new Place
+  nodeFL = Float(self.strnode)
+  newLocation = (Place)self.model.placeMap.get(nodeFL)
+  self.location = newLocation
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="strnode" type="int" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="location" type="Place" defaultValue="" probe="false" accessible="true" />
+
+<RePastEvolver:schedule_item action="step" tick="1.0" type="1" last="false" target="for all Cop" id="1"/>
+
+</RePastEvolver:EvolverBean>
+
+<RePastEvolver:EvolverBean type="Compileable" class="class uchicago.src.simbuilder.beans.gis.GenericAgentProducer" name="ActiveNode" superClass="(None)" groupName="activeNodes">
+  <RePastEvolver:action name="step" sigReadOnly="true" retType="void" imports="" paramNames="">
+<![CDATA[
+def step():
+]]>
+</RePastEvolver:action>
+
+
+<RePastEvolver:parameter name="strnode" type="int" defaultValue="" probe="false" accessible="true" />
+<RePastEvolver:parameter name="agentList" type="java.util.ArrayList" defaultValue="" probe="false" accessible="true" />
+
+
+</RePastEvolver:EvolverBean>
+
+
+</RePastEvolver:EvolverModel>
+</RePastEvolver:EvolverProject>
+</RePastEvolver:EvolverModelSpec>

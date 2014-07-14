@@ -1,3 +1,4 @@
+# ---------------------------------------------------------------------------
 # Create Illicit Grid
 # Last Update: 05/17/2014
 # Author: Satoshi Miyazawa
@@ -5,9 +6,11 @@
 # Create grid polyline feature class from point feature class
 # Parameters: workspace, inPoint, pointInterval, outLine
 # Require: arcpy(ArcGIS)
-# Developed for ArcGIS 10.2.1
+# Developed for ArcGIS 10.2.2
 
 # Update Note: remove outTable from parameters
+# ---------------------------------------------------------------------------
+
 
 import sys, arcpy
 arcpy.env.overwriteOutput = 1 # enable overwriting
