@@ -2,7 +2,7 @@
 # ---------------------------------------------------------------------------
 # CreateValidationFields.py
 # Created on: 2014-04-14 1251
-# Description: 
+# Description: Create files for land cover classification validation
 # ---------------------------------------------------------------------------
 
 # Create Random points within streets_buffer
